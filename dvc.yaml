@@ -2,85 +2,30 @@
 # This pipeline orchestrates data preparation, feature engineering, and model training
 
 stages:
-  # Stage 1: Data Preparation
   prepare:
     cmd: python src/data/prepare.py
     deps:
       - data/raw/restaurant.csv
       - src/data/prepare.py
-      - src/data/__init__.py
     outs:
-      - data/processed:
-          cache: true
-    metrics:
-      - data/processed/data_stats.json:
-          cache: false
-    desc: "Load and prepare raw data, handle missing values, data cleaning"
-
-  # Stage 2: Feature Engineering
-  features:
-    cmd: python src/features/build_features.py
-    deps:
       - data/processed
-      - src/features/build_features.py
-      - src/features/__init__.py
-    outs:
-      - data/processed/features.pkl:
-          cache: true
-    params:
-      - src/features/build_features.py:
-          - tokenizer
-          - max_length
-          - feature_type
-    desc: "Extract and engineer NLP features from processed data"
+    desc: "Load and prepare raw data"
 
-  # Stage 3: Model Training
   train:
     cmd: python src/models/train.py
     deps:
-      - data/processed/features.pkl
+      - data/processed
       - src/models/train.py
-      - src/models/__init__.py
       - config/model.yaml
     outs:
-      - models/model.pkl:
-          cache: true
-      - models/tokenizer.pkl:
-          cache: true
+      - models/model.pkl
+      - models/tokenizer.pkl
+    metrics:
+      - metrics.json:
+          cache: false
     params:
       - config/model.yaml:
           - model.name
           - model.learning_rate
           - model.epochs
-          - model.batch_size
-          - model.test_size
-          - model.random_state
-      - src/models/train.py:
-          - early_stopping
-          - validation_split
-    metrics:
-      - metrics.json:
-          cache: false
-      - models/performance_report.json:
-          cache: false
-    plots:
-      - models/confusion_matrix.json:
-          template: confusion
-          x: actual
-          y: predicted
-      - models/training_history.csv:
-          x: epoch
-          y:
-            models/training_history.csv: [loss, val_loss]
-    desc: "Train sentiment analysis model using transformer architecture"
-
-plots:
-  - metrics.json:
-      title: "Model Performance Metrics"
-      x: metric
-      y: value
-  - models/training_history.csv:
-      title: "Training History"
-      x: epoch
-      y:
-        models/training_history.csv: [loss, val_loss, accuracy, val_accuracy]
+    desc: "Train sentiment analysis model"
