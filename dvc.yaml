@@ -1,0 +1,36 @@
+stages:
+  prepare:
+    cmd: python src/data/prepare.py
+    deps:
+      - data/raw
+      - src/data/prepare.py
+    outs:
+      - data/processed
+
+  features:
+    cmd: python src/features/build_features.py
+    deps:
+      - data/processed
+      - src/features/build_features.py
+    outs:
+      - data/processed/features.pkl
+
+  train:
+    cmd: python src/models/train.py
+    deps:
+      - data/processed
+      - src/models/train.py
+      - src/models/model.py
+    params:
+      - src/models/train.py:
+          - learning_rate
+          - epochs
+          - batch_size
+    outs:
+      - models/model.pkl
+    metrics:
+      - metrics.json:
+          cache: false
+
+plots:
+  - metrics.json

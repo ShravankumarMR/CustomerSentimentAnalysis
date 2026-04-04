@@ -1,0 +1,19 @@
+# Model Configuration
+model:
+  name: "sentiment-classifier"
+  type: "transformer"
+  pretrained: "distilbert-base-uncased"
+  max_length: 512
+  
+training:
+  epochs: 10
+  batch_size: 32
+  learning_rate: 2e-5
+  warmup_steps: 500
+  
+evaluation:
+  metrics:
+    - accuracy
+    - precision
+    - recall
+    - f1-score
