@@ -8,13 +8,13 @@ stages:
       - data/raw/restaurant.csv
       - src/data/prepare.py
     outs:
-      - data/processed
+      - data/processed/processed_data.csv
     desc: "Load and prepare raw data"
 
   features:
     cmd: python src/features/build_features.py
     deps:
-      - data/processed
+      - data/processed/processed_data.csv
       - src/features/build_features.py
     outs:
       - data/processed/train_data.txt

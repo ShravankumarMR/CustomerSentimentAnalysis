@@ -1,0 +1,46 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python src/data/prepare.py
+    deps:
+    - path: data/raw/restaurant.csv
+      hash: md5
+      md5: 92cd4e4dd1525ce858effeba17bef352
+      size: 255141
+    - path: src/data/prepare.py
+      hash: md5
+      md5: f1801ae13dfab3ba60409671e465cdc0
+      size: 5390
+    outs:
+    - path: data/processed/processed_data.csv
+      hash: md5
+      md5: 79c9b7f006b36b2da5a290cdb382abe5
+      size: 199746
+  features:
+    cmd: python src/features/build_features.py
+    deps:
+    - path: data/processed/processed_data.csv
+      hash: md5
+      md5: 79c9b7f006b36b2da5a290cdb382abe5
+      size: 199746
+    - path: src/features/build_features.py
+      hash: md5
+      md5: 400493ee23630a9492c9a61774cbc8c3
+      size: 14086
+    outs:
+    - path: data/processed/features_metadata.json
+      hash: md5
+      md5: e764bb1b041064250c8ba05658429dde
+      size: 197
+    - path: data/processed/test_data.txt
+      hash: md5
+      md5: 6cb217bebd38d0db825592530f5aa689
+      size: 18551
+    - path: data/processed/train_data.txt
+      hash: md5
+      md5: a6c949077a2f6da95cc7aa0acbc1d0c2
+      size: 144858
+    - path: data/processed/val_data.txt
+      hash: md5
+      md5: 2b3c4a912eb1fa1253e55c23c57dfbaa
+      size: 18509
