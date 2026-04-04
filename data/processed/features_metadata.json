@@ -1,0 +1,11 @@
+{
+  "features_type": "aspect_sentiment",
+  "tokenizer": "transformer",
+  "max_length": 512,
+  "splits": {
+    "train": 1216,
+    "val": 152,
+    "test": 153
+  },
+  "total_samples": 1521
+}
