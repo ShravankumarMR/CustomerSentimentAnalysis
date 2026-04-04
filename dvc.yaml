@@ -11,10 +11,25 @@ stages:
       - data/processed
     desc: "Load and prepare raw data"
 
+  features:
+    cmd: python src/features/build_features.py
+    deps:
+      - data/processed
+      - src/features/build_features.py
+    outs:
+      - data/processed/train_data.txt
+      - data/processed/val_data.txt
+      - data/processed/test_data.txt
+    metrics:
+      - data/processed/features_metadata.json:
+          cache: false
+    desc: "Clean text, convert to PyABSA format, split 80/10/10"
+
   train:
     cmd: python src/models/train.py
     deps:
-      - data/processed
+      - data/processed/train_data.txt
+      - data/processed/val_data.txt
       - src/models/train.py
       - config/model.yaml
     outs:
