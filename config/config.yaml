@@ -1,0 +1,246 @@
+# ============================================================================
+# ABSA Training Pipeline - Unified Configuration
+# ============================================================================
+# Central configuration file for all hyperparameters, paths, and settings
+# Edit this file to customize training behavior without modifying code
+# ============================================================================
+
+# --- Project Metadata ---
+project:
+  name: "Customer Sentiment Analysis - ABSA"
+  description: "Aspect-Based Sentiment Analysis for Hindi/Hinglish reviews"
+  version: "1.0"
+
+# --- Model Configuration ---
+model:
+  # Model identifier
+  name: "deberta-absa"
+  
+  # Pretrained model from HuggingFace Hub
+  pretrained: "yangheng/deberta-v3-base-absa-v1.1"
+  
+  # Alternative models (uncomment to use):
+  # pretrained: "xlm-roberta-base"              # XLM-RoBERTa (good for Indic)
+  # pretrained: "distilbert-base-multilingual-cased"  # DistilBERT (lighter)
+  # pretrained: "bert-base-multilingual-cased"  # mBERT (104 languages)
+  
+  # Model type (ABSA specific)
+  task_type: "asc"  # asc=Aspect-Sentiment Classification, ate=Aspect-Term Extraction
+  
+  # Tokenizer settings
+  max_length: 512               # Maximum sequence length
+  padding: "max_length"         # How to pad sequences
+  truncation: True              # Whether to truncate long sequences
+
+# --- Training Configuration ---
+training:
+  # Training duration
+  epochs: 5                     # Number of training epochs (3-5 recommended)
+  
+  # Batch sizes
+  batch_size: 32                # Training batch size
+  eval_batch_size: 32           # Evaluation batch size (can be larger)
+  
+  # Learning rate schedule
+  learning_rate: 2e-5           # Initial learning rate
+  min_learning_rate: 1e-6       # Minimum learning rate
+  warmup_steps: 500             # Warmup steps for scheduler
+  warmup_ratio: 0.0             # Warmup ratio (if not using steps)
+  
+  # Optimizer settings
+  optimizer: "adamw"            # Optimizer: adamw, sgd, rmsprop
+  weight_decay: 0.01            # Weight decay (L2 regularization)
+  epsilon: 1e-8                 # Epsilon for numerical stability
+  
+  # Regularization
+  dropout_prob: 0.1             # Dropout probability
+  
+  # Early stopping
+  early_stopping: True          # Use early stopping
+  early_stopping_patience: 5    # Patience for early stopping
+  early_stopping_metric: "f1"   # Metric to watch: accuracy, f1, loss
+  early_stopping_mode: "max"    # max or min
+  
+  # Gradient settings
+  gradient_accumulation_steps: 1  # Accumulate gradients over N steps
+  max_grad_norm: 1.0            # Maximum gradient norm
+  
+  # Checkpointing
+  save_strategy: "epoch"        # Save checkpoint strategy: no, epoch, steps
+  save_steps: 500               # Save every N steps (if save_strategy=steps)
+  save_total_limit: 3           # Keep only N best models
+  
+  # Logging
+  logging_steps: 5              # Log metrics every N steps
+  logging_strategy: "epoch"     # Logging strategy
+  
+  # Evaluation
+  evaluation_strategy: "epoch"  # Evaluate every epoch
+  eval_steps: 100               # Evaluate every N steps (if eval_strategy=steps)
+  
+  # Random seed for reproducibility
+  seed: 42
+  
+  # Device settings
+  device: "cuda"                # cuda or cpu
+  mixed_precision: "no"         # fp16, bf16, or no
+
+# --- Data Configuration ---
+data:
+  # Data paths
+  train_path: "data/processed/train_data.txt"
+  val_path: "data/processed/val_data.txt"
+  test_path: "data/processed/test_data.txt"
+  
+  # Data format: text$$$[aspect]$$$sentiment
+  separator: "$$$"
+  aspect_brackets: ["[", "]"]
+  
+  # Data preprocessing
+  lowercase: False              # Convert to lowercase
+  remove_special_chars: False   # Remove special characters
+  remove_stopwords: False       # Remove stopwords
+  
+  # Encoding
+  encoding: "utf-8"             # File encoding: utf-8, latin-1, etc
+  fallback_encoding: "latin-1"  # Fallback encoding if primary fails
+  
+  # Data validation
+  skip_malformed: True          # Skip lines that can't be parsed
+  min_text_length: 5            # Minimum text length
+  max_text_length: 512          # Maximum text length
+
+# --- Output Configuration ---
+output:
+  # Model saving
+  model_dir: "models"           # Directory to save models
+  model_name: "asc_model"       # Model subdirectory name
+  
+  # Checkpoints
+  checkpoint_dir: "models/checkpoints"
+  
+  # Logs
+  log_dir: "logs"
+  
+  # Results
+  results_file: "models/training_results.json"
+  summary_file: "models/training_summary.json"
+
+# --- MLflow Configuration ---
+mlflow:
+  # MLflow tracking
+  enabled: True                 # Enable MLflow tracking
+  tracking_uri: null            # MLflow server URI (null=local)
+  
+  # Experiment
+  experiment_name: "ABSA-ASC-Fine-tuning"  # Experiment name
+  run_name: null                # Run name (auto-generated if null)
+  
+  # Registry
+  register_model: True          # Register model in MLflow Registry
+  model_registry_name: "ABSA-ASC-Deberta-Hindi"
+  model_stage: "Staging"        # Staging or Production
+  
+  # Tags
+  tags:
+    framework: "PyABSA"
+    language: "Hindi/Hinglish"
+    task: "ABSA"
+  
+  # Artifact logging
+  log_artifacts: True
+  artifact_path: "model"
+  
+  # Backend store
+  backend_store_uri: null       # null = default SQLite
+  default_artifact_root: "mlruns"
+
+# --- Evaluation Configuration ---
+evaluation:
+  # Metrics to track
+  metrics:
+    - accuracy
+    - precision
+    - recall
+    - f1
+  
+  # Classification labels
+  sentiment_labels:
+    - positive
+    - negative
+    - neutral
+  
+  # Threshold adjustments
+  confidence_threshold: 0.5     # Confidence threshold for predictions
+  
+  # Test set evaluation
+  evaluate_test_set: True
+  test_metric: "f1"             # Metric to report for test set
+
+# --- Hardware Configuration ---
+hardware:
+  # Device
+  device: "cuda"                # cuda or cpu
+  device_id: 0                  # Which GPU to use
+  
+  # Distributed training
+  distributed: False            # Use distributed training
+  num_gpus: 1                   # Number of GPUs (if distributed)
+  
+  # Memory optimization
+  fp16: False                   # Use mixed precision
+  gradient_checkpointing: False # Use gradient checkpointing to save memory
+  
+  # Performance
+  num_workers: 4                # Number of data loading workers
+
+# --- Advanced Configuration ---
+advanced:
+  # Model fine-tuning
+  freeze_encoder: False         # Freeze encoder (only train head)
+  num_frozen_layers: 0          # Number of frozen layers from bottom
+  
+  # Loss function
+  loss_function: "cross_entropy"
+  class_weights: null           # Optional class weights
+  
+  # Data augmentation
+  augmentation: False           # Use data augmentation
+  augmentation_prob: 0.1        # Probability of augmentation
+  
+  # Debugging
+  debug_mode: False             # Enable debug mode
+  verbose: True                 # Verbose logging
+  
+  # Custom preprocessing
+  custom_preprocessing: False   # Use custom preprocessing
+  
+  # Validation
+  validate_data: True           # Validate data before training
+  validate_config: True         # Validate config file
+  
+  # Model export
+  export_onnx: False            # Export model to ONNX format
+  export_tflite: False          # Export model to TF Lite format
+
+# --- Paths (Auto-set, override if needed) ---
+paths:
+  project_root: "."
+  src_dir: "src"
+  config_dir: "config"
+  data_dir: "data"
+  model_dir: "models"
+  log_dir: "logs"
+
+# ============================================================================
+# Usage Notes:
+# ============================================================================
+# 1. Edit this file to customize training
+# 2. CLI arguments override these settings: 
+#    python run_training.py --epochs 10 --batch-size 16
+# 3. For debugging, set advanced.debug_mode: True
+# 4. Change pretrained model to use different models
+# 5. Adjust learning_rate if training diverges or converges slowly
+# 6. Lower batch_size if getting CUDA out of memory errors
+# 7. Increase patience if model is not converging well
+# ============================================================================
